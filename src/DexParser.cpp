@@ -59,12 +59,19 @@ uint32_t readULeb128(const uint8_t*& ptr) {
     return result;
 }
 
+struct DexProtoId {
+    uint32_t shorty_idx;
+    uint32_t return_type_idx;
+    uint32_t parameters_off;
+};
+
 void DexParser::parse() {
     const DexHeader* header = reinterpret_cast<const DexHeader*>(data.data());
     
     auto getString = [&](uint32_t idx) -> std::string {
         if (idx >= header->string_ids_size) return "";
         uint32_t off = *reinterpret_cast<const uint32_t*>(data.data() + header->string_ids_off + idx * 4);
+        if (off >= data.size()) return "";
         const uint8_t* ptr = data.data() + off;
         readULeb128(ptr); // Skip length
         return std::string(reinterpret_cast<const char*>(ptr));
@@ -75,6 +82,14 @@ void DexParser::parse() {
         uint32_t nameIdx = *reinterpret_cast<const uint32_t*>(data.data() + header->type_ids_off + typeIdx * 4);
         return getString(nameIdx);
     };
+
+    auto getProto = [&](uint32_t protoIdx) -> std::string {
+        if (protoIdx >= header->proto_ids_size) return "";
+        const DexProtoId* protos = reinterpret_cast<const DexProtoId*>(data.data() + header->proto_ids_off);
+        std::string retType = getClassName(protos[protoIdx].return_type_idx);
+        std::string shorty = getString(protos[protoIdx].shorty_idx);
+        return retType + " (" + shorty + ")";
+    };
     
     const DexMethodId* methodIds = reinterpret_cast<const DexMethodId*>(data.data() + header->method_ids_off);
     for (uint32_t i = 0; i < header->method_ids_size; ++i) {
@@ -82,7 +97,7 @@ void DexParser::parse() {
         m.methodIdx = i;
         m.className = getClassName(methodIds[i].class_idx);
         m.methodName = getString(methodIds[i].name_idx);
-        m.signature = ""; // Minimal: skip proto for now
+        m.signature = getProto(methodIds[i].proto_idx);
         methods.push_back(m);
     }
 }
