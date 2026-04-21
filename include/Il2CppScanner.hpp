@@ -9,6 +9,7 @@ public:
     
     bool isValid() const;
     uint64_t findMethodOffset(const std::string& className, const std::string& methodName);
+    void scanAllMethods(std::vector<ElfSymbol>& outSymbols);
 
 private:
     std::vector<uint8_t> metadata;
