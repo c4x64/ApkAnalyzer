@@ -14,7 +14,55 @@ bool CreateDeviceD3D(HWND hWnd);
 void CleanupDeviceD3D();
 void CreateRenderTarget();
 void CleanupRenderTarget();
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#include <commdlg.h>
+#include "ZipUtility.hpp"
+#include "ElfParser.hpp"
+#include "DexParser.hpp"
+
+void OpenApkDialog(HWND hwnd) {
+    char szFile[260] = { 0 };
+    OPENFILENAMEA ofn = { 0 };
+    ofn.lStructSize = sizeof(ofn);
+    ofn.hwndOwner = hwnd;
+    ofn.lpstrFile = szFile;
+    ofn.nMaxFile = sizeof(szFile);
+    ofn.lpstrFilter = "APK Files\0*.apk\0All Files\0*.*\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+
+    if (GetOpenFileNameA(&ofn)) {
+        std::string apkPath = szFile;
+        auto files = ZipUtility::listFiles(apkPath);
+        for (const auto& file : files) {
+            if (file.find(".so") != std::string::npos) {
+                auto data = ZipUtility::readFile(apkPath, file);
+                ElfParser parser(data);
+                if (parser.isValid()) Menu::setSymbols(file, parser.getSymbols());
+            }
+            if (file.find(".dex") != std::string::npos) {
+                auto data = ZipUtility::readFile(apkPath, file);
+                DexParser parser(data);
+                if (parser.isValid()) Menu::setMethods(parser.getMethods());
+            }
+        }
+    }
+}
+
+// Inside the message loop, add the button to the Menu
+void DrawTopBar(HWND hwnd) {
+    if (ImGui::BeginMainMenuBar()) {
+        if (ImGui::BeginMenu("File")) {
+            if (ImGui::MenuItem("Open APK...")) {
+                OpenApkDialog(hwnd);
+            }
+            if (ImGui::MenuItem("Exit")) {
+                PostQuitMessage(0);
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMainMenuBar();
+    }
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
     WNDCLASSEXW wc = { sizeof(wc), CS_CLASSDC, WndProc, 0L, 0L, GetModuleHandle(nullptr), nullptr, nullptr, nullptr, nullptr, L"ApkAnalyzerGUI", nullptr };
@@ -49,6 +97,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
         ImGui_ImplWin32_NewFrame();
         ImGui::NewFrame();
 
+        DrawTopBar(hwnd);
         Menu::draw(&show_menu);
 
         ImGui::Render();
