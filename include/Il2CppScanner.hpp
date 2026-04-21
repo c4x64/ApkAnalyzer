@@ -2,6 +2,7 @@
 #include <vector>
 #include <cstdint>
 #include <string>
+#include "ElfParser.hpp"
 
 class Il2CppScanner {
 public:
