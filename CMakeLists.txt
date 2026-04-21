@@ -20,6 +20,7 @@ set(SOURCES
     src/ManifestParser.cpp
     src/Exporter.cpp
     src/Menu.cpp
+    src/MemoryUtils.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_widgets.cpp
