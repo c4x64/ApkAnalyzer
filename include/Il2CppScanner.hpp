@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include "ElfParser.hpp"
+#include "MemoryUtils.hpp"
 
 class Il2CppScanner {
 public:
