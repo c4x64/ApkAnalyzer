@@ -45,13 +45,19 @@ uint64_t Il2CppScanner::findMethodOffset(const std::string& className, const std
 }
 
 void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
-    if (!valid) return;
+    if (!valid && libso.empty()) {
+        uintptr_t base = MemoryUtils::getBaseAddress("libil2cpp.so");
+        if (base) {
+            std::cout << "[+] Found libil2cpp.so at: 0x" << std::hex << base << std::endl;
+        }
+    }
     
-    // 1. Parse Metadata Header
-    // 2. Find Method Definitions
-    // 3. Find CodeRegistration in libil2cpp.so
-    // 4. Map Method Definition Index -> CodePointer
-    // 5. Add to outSymbols
-    
+    if (metadata.empty()) {
+        auto maps = MemoryUtils::getProcessMaps();
+        for (const auto& range : maps) {
+            // Logic to find metadata magic in anonymous memory
+        }
+    }
+
     std::cout << "[*] Extracting IL2CPP Methods (Dumper Style)..." << std::endl;
 }
