@@ -6,6 +6,7 @@
 #include "DexParser.hpp"
 #include "Exporter.hpp"
 #include "Menu.hpp"
+#include "Logger.hpp"
 
 void printHelp() {
     std::cout << "Usage: apk_offset_gen <apk_path> [options]\n";
@@ -30,25 +31,31 @@ int main(int argc, char* argv[]) {
         pkgName = argv[3];
     }
 
-    std::cout << "[*] Analyzing APK: " << apkPath << std::endl;
+    Logger::log(Logger::INFO, "Analyzing APK: " + apkPath);
 
     auto files = ZipUtility::listFiles(apkPath);
     if (files.empty()) {
-        std::cerr << "[!] Could not read APK or APK is empty." << std::endl;
+        Logger::log(Logger::WARNING, "Could not read APK or APK is empty.");
         return 1;
     }
 
     if (mode == "--libs" || mode == "--export") {
         for (const auto& file : files) {
             if (file.find(".so") != std::string::npos) {
-                std::cout << "\n[+] Processing Library: " << file << std::endl;
+                Logger::log(Logger::INFO, "Processing Library: " + file);
                 auto data = ZipUtility::readFile(apkPath, file);
                 ElfParser parser(data);
                 if (parser.isValid()) {
                     auto symbols = parser.getSymbols();
+                    // New: Attempt IL2CPP scan if libil2cpp detected
+                    if (file.find("libil2cpp") != std::string::npos) {
+                        Il2CppScanner scanner({}, data);
+                        scanner.scanAllMethods(symbols);
+                    }
+
                     if (mode == "--export") {
                         if (Exporter::exportOffsets(pkgName, file, symbols)) {
-                            std::cout << "    [V] Exported to ExportedOffsets/" << pkgName << "/Export" << file << ".h" << std::endl;
+                            Logger::log(Logger::SUCCESS, "Exported to ExportedOffsets/" + pkgName + "/Export" + file + ".h");
                         }
                     } else {
                         for (const auto& sym : symbols) {
