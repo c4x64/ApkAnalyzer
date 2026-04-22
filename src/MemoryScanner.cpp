@@ -1,6 +1,13 @@
 #include "MemoryScanner.hpp"
-#include <fstream>
-#include <sstream>
+#include <unistd.h>
+#include <sys/mman.h>
+
+bool MemoryScanner::isReadable(uintptr_t address) {
+    if (address == 0) return false;
+    // Check if memory is accessible using mincore or msync
+    unsigned char vec;
+    return mincore((void*)address, 1, &vec) != -1;
+}
 
 uintptr_t MemoryScanner::findSectionBase(const std::string& sectionName) {
     std::ifstream maps("/proc/self/maps");
