@@ -48,16 +48,23 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
     if (!valid && libso.empty()) {
         uintptr_t base = MemoryUtils::getBaseAddress("libil2cpp.so");
         if (base) {
-            std::cout << "[+] Found libil2cpp.so at: 0x" << std::hex << base << std::endl;
+            Logger::log(Logger::SUCCESS, "Found libil2cpp.so at: 0x" + std::to_string(base));
         }
     }
     
     if (metadata.empty()) {
         auto maps = MemoryUtils::getProcessMaps();
         for (const auto& range : maps) {
-            // Logic to find metadata magic in anonymous memory
+            // Scan anonymous memory for metadata signature
+            for (uintptr_t addr = range.start; addr < range.end - 4; addr += 4) {
+                if (*(uint32_t*)addr == 0xFAB11BAF) {
+                    Logger::log(Logger::SUCCESS, "Found IL2CPP Metadata at: 0x" + std::to_string(addr));
+                    // Parse header here...
+                    break;
+                }
+            }
         }
     }
 
-    std::cout << "[*] Extracting IL2CPP Methods (Dumper Style)..." << std::endl;
+    Logger::log(Logger::INFO, "Extracting IL2CPP Methods (Dumper Style)...");
 }
