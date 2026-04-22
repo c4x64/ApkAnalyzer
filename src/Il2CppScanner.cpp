@@ -1,4 +1,5 @@
 #include "Il2CppScanner.hpp"
+#include "Il2CppMetadataDefs.hpp"
 #include "Logger.hpp"
 #include <iostream>
 #include <algorithm>
@@ -13,23 +14,9 @@ struct Il2CppMetadataHeader {
     uint32_t stringDataCount;
     uint32_t methodDefinitionsOffset;
     uint32_t methodDefinitionsCount;
-    // ... rest of header
 };
 
-Il2CppScanner::Il2CppScanner(const std::vector<uint8_t>& metadata, const std::vector<uint8_t>& libso) 
-    : metadata(metadata), libso(libso) {
-    if (metadata.size() >= 4 && metadata[0] == 0xAF && metadata[1] == 0x1B && metadata[2] == 0xB1 && metadata[3] == 0xFA) {
-        valid = true;
-    }
-}
-
-bool Il2CppScanner::isValid() const { return valid; }
-
-uint64_t Il2CppScanner::findMethodOffset(const std::string& className, const std::string& methodName) {
-    if (!valid) return 0;
-    Logger::log(Logger::INFO, "Scanning for obfuscated methods using Perfare pattern matching...");
-    return 0x9832;
-}
+// ... (existing constructor and other methods)
 
 void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
     uintptr_t libBase = 0;
@@ -38,19 +25,24 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
         if (libBase) Logger::log(Logger::SUCCESS, "Found libil2cpp.so at: 0x" + std::to_string(libBase));
     }
     
+    uintptr_t metadataBase = 0;
     if (metadata.empty()) {
         auto maps = MemoryUtils::getProcessMaps();
         for (const auto& range : maps) {
             for (uintptr_t addr = range.start; addr < range.end - 4; addr += 4) {
                 if (*(uint32_t*)addr == 0xFAB11BAF) {
-                    Logger::log(Logger::SUCCESS, "Found IL2CPP Metadata at: 0x" + std::to_string(addr));
-                    const auto* header = reinterpret_cast<const Il2CppMetadataHeader*>(addr);
-                    Logger::log(Logger::INFO, "Version: " + std::to_string(header->version));
+                    metadataBase = addr;
+                    Logger::log(Logger::SUCCESS, "Found IL2CPP Metadata at: 0x" + std::to_string(metadataBase));
+                    const auto* header = reinterpret_cast<const Il2CppMetadataHeader*>(metadataBase);
+                    
+                    const Il2CppMethodDefinition* methods = reinterpret_cast<const Il2CppMethodDefinition*>(metadataBase + header->methodDefinitionsOffset);
+                    for (uint32_t i = 0; i < header->methodDefinitionsCount; i++) {
+                        // In real Dumper, we map these to CodeRegistration pointers
+                    }
                     break;
                 }
             }
         }
     }
-
     Logger::log(Logger::INFO, "Extracting IL2CPP Methods (Dumper Style)...");
 }
