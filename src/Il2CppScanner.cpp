@@ -1,22 +1,12 @@
 #include "Il2CppScanner.hpp"
 #include "Il2CppMetadataDefs.hpp"
+#include "Il2CppCodeRegistration.hpp"
 #include "Logger.hpp"
 #include <iostream>
 #include <algorithm>
 #include <cstring>
 
-struct Il2CppMetadataHeader {
-    uint32_t magic;
-    int32_t version;
-    uint32_t stringIndexTableOffset;
-    uint32_t stringIndexTableCount;
-    uint32_t stringDataOffset;
-    uint32_t stringDataCount;
-    uint32_t methodDefinitionsOffset;
-    uint32_t methodDefinitionsCount;
-};
-
-// ... (existing constructor and other methods)
+// ... (existing Il2CppMetadataHeader)
 
 void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
     uintptr_t libBase = 0;
@@ -32,17 +22,29 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
             for (uintptr_t addr = range.start; addr < range.end - 4; addr += 4) {
                 if (*(uint32_t*)addr == 0xFAB11BAF) {
                     metadataBase = addr;
-                    Logger::log(Logger::SUCCESS, "Found IL2CPP Metadata at: 0x" + std::to_string(metadataBase));
                     const auto* header = reinterpret_cast<const Il2CppMetadataHeader*>(metadataBase);
                     
                     const Il2CppMethodDefinition* methods = reinterpret_cast<const Il2CppMethodDefinition*>(metadataBase + header->methodDefinitionsOffset);
-                    for (uint32_t i = 0; i < header->methodDefinitionsCount; i++) {
-                        // In real Dumper, we map these to CodeRegistration pointers
+                    
+                    // Locate CodeRegistration (often found by scanning for patterns in libil2cpp)
+                    uintptr_t codeRegistration = MemoryUtils::findPattern(libBase, libBase + 0x1000000, 
+                        "\x00\x00\x00\x00", "???"); // Pattern would be specific to IL2CPP version
+
+                    if (codeRegistration) {
+                        const auto* reg = reinterpret_cast<const Il2CppCodeRegistration*>(codeRegistration);
+                        const uintptr_t* methodPtrs = reinterpret_cast<const uintptr_t*>(reg->methodPointers);
+
+                        for (uint32_t i = 0; i < header->methodDefinitionsCount; i++) {
+                            ElfSymbol sym;
+                            sym.address = methodPtrs[i];
+                            // Resolve string name using methods[i].nameIndex
+                            outSymbols.push_back(sym);
+                        }
+                        Logger::log(Logger::SUCCESS, "Extracted " + std::to_string(header->methodDefinitionsCount) + " methods.");
                     }
                     break;
                 }
             }
         }
     }
-    Logger::log(Logger::INFO, "Extracting IL2CPP Methods (Dumper Style)...");
 }
