@@ -13,5 +13,5 @@ class MemoryUtils {
 public:
     static uintptr_t getBaseAddress(const std::string& libName);
     static std::vector<MemoryRange> getProcessMaps();
-    static uintptr_t findPattern(uintptr_t start, uintptr_t end, const char* pattern, const char* mask);
+    static uintptr_t findPattern(uintptr_t start, uintptr_t end, const std::vector<uint8_t>& pattern, const std::string& mask);
 };

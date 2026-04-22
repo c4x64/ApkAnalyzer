@@ -39,12 +39,12 @@ uintptr_t MemoryUtils::getBaseAddress(const std::string& libName) {
     return 0;
 }
 
-uintptr_t MemoryUtils::findPattern(uintptr_t start, uintptr_t end, const char* pattern, const char* mask) {
-    size_t patternLen = strlen(mask);
+uintptr_t MemoryUtils::findPattern(uintptr_t start, uintptr_t end, const std::vector<uint8_t>& pattern, const std::string& mask) {
+    size_t patternLen = mask.length();
     for (uintptr_t i = start; i < end - patternLen; i++) {
         bool found = true;
         for (size_t j = 0; j < patternLen; j++) {
-            if (mask[j] != '?' && pattern[j] != *(char*)(i + j)) {
+            if (mask[j] != '?' && pattern[j] != *(uint8_t*)(i + j)) {
                 found = false;
                 break;
             }
