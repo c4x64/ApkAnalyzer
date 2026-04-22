@@ -61,7 +61,13 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
                         Logger::log(Logger::INFO, "Found potential CodeRegistration at: 0x" + std::to_string(codeRegistration));
                         const auto* reg = reinterpret_cast<const Il2CppCodeRegistration*>(codeRegistration);
                         const uintptr_t* methodPtrs = reinterpret_cast<const uintptr_t*>(reg->methodPointers);
-                        const char* stringData = reinterpret_cast<const char*>(metadataBase + header->stringDataOffset);
+                        
+                        // Extract and decrypt string data
+                        std::vector<uint8_t> stringTable(reinterpret_cast<const uint8_t*>(metadataBase + header->stringDataOffset), 
+                                                        reinterpret_cast<const uint8_t*>(metadataBase + header->stringDataOffset + header->stringDataCount));
+                        decryptStringTable(stringTable, header->version); // Using header version as key
+
+                        const char* stringData = reinterpret_cast<const char*>(stringTable.data());
                         const int32_t* stringIndices = reinterpret_cast<const int32_t*>(metadataBase + header->stringIndexTableOffset);
 
                         for (uint32_t i = 0; i < header->methodDefinitionsCount; i++) {
