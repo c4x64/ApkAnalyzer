@@ -33,14 +33,21 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
                     if (codeRegistration) {
                         const auto* reg = reinterpret_cast<const Il2CppCodeRegistration*>(codeRegistration);
                         const uintptr_t* methodPtrs = reinterpret_cast<const uintptr_t*>(reg->methodPointers);
+                        const char* stringData = reinterpret_cast<const char*>(metadataBase + header->stringDataOffset);
+                        const int32_t* stringIndices = reinterpret_cast<const int32_t*>(metadataBase + header->stringIndexTableOffset);
 
                         for (uint32_t i = 0; i < header->methodDefinitionsCount; i++) {
                             ElfSymbol sym;
                             sym.address = methodPtrs[i];
-                            // Resolve string name using methods[i].nameIndex
+                            int32_t nameIdx = methods[i].nameIndex;
+                            if (nameIdx >= 0) {
+                                sym.name = std::string(stringData + stringIndices[nameIdx]);
+                            } else {
+                                sym.name = "UnknownMethod_" + std::to_string(i);
+                            }
                             outSymbols.push_back(sym);
                         }
-                        Logger::log(Logger::SUCCESS, "Extracted " + std::to_string(header->methodDefinitionsCount) + " methods.");
+                        Logger::log(Logger::SUCCESS, "Extracted " + std::to_string(header->methodDefinitionsCount) + " methods with names.");
                     }
                     break;
                 }
