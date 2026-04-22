@@ -1,6 +1,7 @@
 #include "Il2CppScanner.hpp"
 #include "Il2CppMetadataDefs.hpp"
 #include "Il2CppCodeRegistration.hpp"
+#include "PatternScanner.hpp"
 #include "Logger.hpp"
 #include <iostream>
 #include <algorithm>
