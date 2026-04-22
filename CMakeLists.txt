@@ -22,6 +22,7 @@ set(SOURCES
     src/Menu.cpp
     src/MemoryUtils.cpp
     src/MemoryScanner.cpp
+    src/PatternScanner.cpp
     src/Logger.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
