@@ -21,6 +21,7 @@ set(SOURCES
     src/Exporter.cpp
     src/Menu.cpp
     src/MemoryUtils.cpp
+    src/Logger.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_widgets.cpp

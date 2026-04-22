@@ -4,6 +4,7 @@
 #include "ZipUtility.hpp"
 #include "ElfParser.hpp"
 #include "DexParser.hpp"
+#include "Il2CppScanner.hpp"
 #include "Exporter.hpp"
 #include "Menu.hpp"
 #include "Logger.hpp"

@@ -100,7 +100,7 @@ jobs:
         submodules: recursive
 
     - name: Set up NDK
-      uses: nndixon/setup-ndk@v1
+      uses: nwidger/setup-android-ndk@v1
       with:
         ndk-version: r26b
 
