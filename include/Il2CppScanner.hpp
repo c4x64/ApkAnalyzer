@@ -12,6 +12,7 @@ public:
     bool isValid() const;
     uint64_t findMethodOffset(const std::string& className, const std::string& methodName);
     void scanAllMethods(std::vector<ElfSymbol>& outSymbols);
+    void decryptStringTable(std::vector<uint8_t>& stringTable, uint32_t xorKey);
 
 private:
     std::vector<uint8_t> metadata;
