@@ -1,0 +1,10 @@
+^C:\USERS\ADMINISTRATOR\APKANALYZER\BUILD_LINUX\CMAKEFILES\D53770B3660D0ABA8F33B307572EF834\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SC:/Users/Administrator/ApkAnalyzer -BC:/Users/Administrator/ApkAnalyzer/build_linux --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file C:/Users/Administrator/ApkAnalyzer/build_linux/ApkAnalyzer.slnx
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="C:\Users\Administrator\ApkAnalyzer\build_temp\CMakeFiles\4c317284e3d28384e6c260386fb35c69\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{E08103D1-0A0C-3DE2-8C68-038F0593D4EC}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

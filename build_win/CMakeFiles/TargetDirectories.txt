@@ -1,0 +1,5 @@
+C:/Users/Administrator/ApkAnalyzer/build_win/CMakeFiles/apkanalyzer_lib.dir
+C:/Users/Administrator/ApkAnalyzer/build_win/CMakeFiles/apkanalyzer_cli.dir
+C:/Users/Administrator/ApkAnalyzer/build_win/CMakeFiles/apkanalyzer_gui.dir
+C:/Users/Administrator/ApkAnalyzer/build_win/CMakeFiles/ALL_BUILD.dir
+C:/Users/Administrator/ApkAnalyzer/build_win/CMakeFiles/ZERO_CHECK.dir
