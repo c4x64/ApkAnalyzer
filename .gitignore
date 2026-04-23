@@ -1,20 +1,23 @@
-build/
-bin/
-out/
-.vs/
-*.user
-*.obj
+﻿
+# Build outputs
+/build/
+/build_*/
 *.exe
 *.dll
-*.so
-*.a
+*.obj
+*.o
 *.lib
-*.pdb
-*.ilk
-*.exp
-*.log
+
+# IDE/Editor
+.vs/
+.vscode/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.user
+*.suo
+
+# System/Misc
 .DS_Store
-miniz.zip
-miniz_extract/
-ExportedOffsets/
-imgui.ini
+Thumbs.db
+
