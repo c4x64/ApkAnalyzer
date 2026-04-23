@@ -29,6 +29,9 @@ set(SOURCES
     src/Logger.cpp
     src/core/Decoder.cpp
     src/core/StringDecryptor.cpp
+    src/core/FileMapper.cpp
+    src/core/DexAnalyzer.cpp
+    src/core/Instrumentation.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_widgets.cpp
