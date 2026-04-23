@@ -10,3 +10,10 @@ struct Il2CppMethodDefinition {
     uint16_t slot;
     uint16_t parameterCount;
 };
+
+struct Il2CppParameterDefinition {
+    int32_t nameIndex;
+    uint32_t token;
+    int32_t customAttributeIndex;
+    int32_t typeIndex;
+};
