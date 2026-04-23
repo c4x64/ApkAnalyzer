@@ -50,7 +50,14 @@ int main(int argc, char* argv[]) {
                     auto symbols = parser.getSymbols();
                     // New: Attempt IL2CPP scan if libil2cpp detected
                     if (file.find("libil2cpp") != std::string::npos) {
-                        Il2CppScanner scanner({}, data);
+                        Logger::log(Logger::INFO, "libil2cpp detected. Searching for metadata...");
+                        std::string metadataFile = ZipUtility::findMetadataMagic(apkPath);
+                        std::vector<uint8_t> metadataData;
+                        if (!metadataFile.empty()) {
+                            Logger::log(Logger::SUCCESS, "Found metadata in: " + metadataFile);
+                            metadataData = ZipUtility::readFile(apkPath, metadataFile);
+                        }
+                        Il2CppScanner scanner(metadataData, data);
                         scanner.scanAllMethods(symbols);
                     }
 
