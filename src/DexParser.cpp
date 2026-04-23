@@ -88,7 +88,15 @@ void DexParser::parse() {
         const DexProtoId* protos = reinterpret_cast<const DexProtoId*>(data.data() + header->proto_ids_off);
         std::string retType = getClassName(protos[protoIdx].return_type_idx);
         std::string shorty = getString(protos[protoIdx].shorty_idx);
-        return retType + " (" + shorty + ")";
+        
+        std::string params = "";
+        if (shorty.length() > 1) {
+            for (size_t i = 1; i < shorty.length(); ++i) {
+                if (i > 1) params += ", ";
+                params += shorty[i]; // Simplify: use shorty chars (I, L, Z, etc.)
+            }
+        }
+        return retType + " (" + params + ")";
     };
     
     const DexMethodId* methodIds = reinterpret_cast<const DexMethodId*>(data.data() + header->method_ids_off);
