@@ -74,11 +74,15 @@ void Il2CppScanner::scanAllMethods(std::vector<ElfSymbol>& outSymbols) {
                             ElfSymbol sym;
                             sym.address = methodPtrs[i];
                             int32_t nameIdx = methods[i].nameIndex;
-                            if (nameIdx >= 0) {
-                                sym.name = std::string(stringData + stringIndices[nameIdx]);
-                            } else {
-                                sym.name = "UnknownMethod_" + std::to_string(i);
+                            std::string methodName = (nameIdx >= 0) ? (stringData + stringIndices[nameIdx]) : "Unknown_" + std::to_string(i);
+                            
+                            // Resolve parameters
+                            std::string params = "";
+                            if (methods[i].parameterCount > 0) {
+                                params = "args: " + std::to_string(methods[i].parameterCount);
                             }
+                            
+                            sym.name = methodName + "(" + params + ")";
                             outSymbols.push_back(sym);
                         }
                         Logger::log(Logger::SUCCESS, "Extracted " + std::to_string(header->methodDefinitionsCount) + " methods with names.");
