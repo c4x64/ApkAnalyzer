@@ -19,8 +19,22 @@ namespace Instrumentation {
     // This is the function we call when a hook is triggered
     void __stdcall DecryptionTriggerHook(uintptr_t base, size_t size) {
         Logger::log(Logger::SUCCESS, "Decryption routine triggered! Dumping memory range...");
-        // Here we would implement the memory dumping logic
-        // This keeps it 100% self-contained within this app
+        
+        // Define a path for the dumped library
+        std::string dumpPath = "dumped_lib.so";
+        
+        // Create the file and write the memory contents
+        HANDLE hFile = CreateFileA(dumpPath.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (hFile != INVALID_HANDLE_VALUE) {
+            DWORD bytesWritten = 0;
+            // Note: This assumes 'base' and 'size' were passed correctly by the caller.
+            // In a production hook, we would retrieve these from register state.
+            WriteFile(hFile, (LPCVOID)base, (DWORD)size, &bytesWritten, NULL);
+            CloseHandle(hFile);
+            Logger::log(Logger::SUCCESS, "Library successfully dumped to " + dumpPath);
+        } else {
+            Logger::log(Logger::WARNING, "Failed to create dump file.");
+        }
     }
 
     void installDecryptionWatchdog(uintptr_t libBase, size_t libSize) {
