@@ -28,6 +28,7 @@ set(SOURCES
     src/NativeTracer.cpp
     src/Logger.cpp
     src/core/Decoder.cpp
+    src/core/StringDecryptor.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_widgets.cpp
