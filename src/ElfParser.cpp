@@ -49,12 +49,15 @@ ElfParser::ElfParser(const std::vector<uint8_t>& data) : data(data) {
     _is64Bit = (data[4] == 2);
     valid = true;
     
+    // Parse sections first to use them for symbol parsing
     if (_is64Bit) parse64();
     else parse32();
 }
 
 bool ElfParser::isValid() const { return valid; }
 bool ElfParser::is64Bit() const { return _is64Bit; }
+std::vector<ElfSymbol> ElfParser::getSymbols() const { return symbols; }
+std::vector<ElfParser::Section> ElfParser::getSections() const { return sections; }
 
 void ElfParser::parse64() {
     if (data.size() < sizeof(Elf64_Ehdr)) return;
@@ -64,23 +67,35 @@ void ElfParser::parse64() {
     
     const Elf64_Shdr* shdr = reinterpret_cast<const Elf64_Shdr*>(data.data() + ehdr->e_shoff);
     
+    // Get section names
+    const char* shstrtab = reinterpret_cast<const char*>(data.data() + shdr[ehdr->e_shstrndx].sh_offset);
+    
     for (int i = 0; i < ehdr->e_shnum; ++i) {
+        Section s;
+        s.name = shstrtab + shdr[i].sh_name;
+        s.address = shdr[i].sh_addr;
+        s.offset = shdr[i].sh_offset;
+        s.size = shdr[i].sh_size;
+        s.type = shdr[i].sh_type;
+        sections.push_back(s);
+        
         if (shdr[i].sh_type == 2 || shdr[i].sh_type == 11) { // SHT_SYMTAB or SHT_DYNSYM
             const Elf64_Sym* syms = reinterpret_cast<const Elf64_Sym*>(data.data() + shdr[i].sh_offset);
-            int num_syms = shdr[i].sh_size / sizeof(Elf64_Sym);
+            int num_syms = (int)(shdr[i].sh_size / sizeof(Elf64_Sym));
             
-            uint32_t strtab_idx = shdr[i].sh_link;
+            uint32_t strtab_idx = (uint32_t)shdr[i].sh_link;
             if (strtab_idx >= ehdr->e_shnum) continue;
             const char* strtab = reinterpret_cast<const char*>(data.data() + shdr[strtab_idx].sh_offset);
             
             for (int j = 0; j < num_syms; ++j) {
-                ElfSymbol s;
-                s.name = strtab + syms[j].st_name;
-                s.address = syms[j].st_value;
-                s.size = (uint32_t)syms[j].st_size;
-                s.info = syms[j].st_info;
-                if (!s.name.empty()) {
-                    symbols.push_back(s);
+                ElfSymbol sym;
+                sym.name = strtab + syms[j].st_name;
+                sym.address = syms[j].st_value;
+                sym.size = (uint32_t)syms[j].st_size;
+                sym.info = syms[j].st_info;
+                sym.section_idx = syms[j].st_shndx;
+                if (!sym.name.empty()) {
+                    symbols.push_back(sym);
                 }
             }
         }
@@ -156,8 +171,6 @@ void ElfParser::parse32() {
         }
     }
 }
-
-std::vector<ElfSymbol> ElfParser::getSymbols() const { return symbols; }
 
 uint64_t ElfParser::findSymbolAddress(const std::string& name) const {
     auto it = std::find_if(symbols.begin(), symbols.end(), [&](const ElfSymbol& s) {

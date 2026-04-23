@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 #include "imgui.h"
 #include "ElfParser.hpp"
 #include "DexParser.hpp"
