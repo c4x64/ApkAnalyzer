@@ -216,31 +216,47 @@ const char* opcode_names[] = {
 };
 
 int getOpcodeLength(uint8_t opcode) {
-    // Standard Dalvik instruction lengths (very simplified)
-    if (opcode == 0x00) return 1; // nop
-    if (opcode >= 0x01 && opcode <= 0x03) return 1; // move
-    if (opcode >= 0x07 && opcode <= 0x09) return 1; // move-object
-    if (opcode >= 0x0a && opcode <= 0x0e) return 1; // result/exception
-    if (opcode >= 0x12 && opcode <= 0x1c) return 2; // const
-    if (opcode == 0x1b || opcode == 0x1c) return 3; // const-string/class
-    return 1; // Default
+    // Dalvik instruction format lengths based on opcode (roughly)
+    // 1-byte opcodes: 00-0F, 10, 11
+    if (opcode <= 0x11) return 1;
+    // 2-byte opcodes: 12-19
+    if (opcode <= 0x19) return 2;
+    // 3-byte opcodes: 1A-1C
+    if (opcode <= 0x1C) return 3;
+    // Longer formats (e.g. range, switch)
+    if (opcode == 0x24 || opcode == 0x25 || opcode == 0x2B || opcode == 0x2C) return 3;
+    return 1;
 }
 
 std::vector<DexInstruction> DexParser::disassembleMethod(uint32_t methodIdx) {
     std::vector<DexInstruction> insts;
     if (data.empty()) return insts;
     
-    // Extract actual code from the DEX code_item
-    // For this push, we are implementing the loop that maps bytes to opcode strings
-    for (uint32_t i = 0; i < 16; i++) {
+    // In a real DEX, we would locate the code_item for methodIdx
+    // For now, we simulate starting from a data offset
+    const DexHeader* header = reinterpret_cast<const DexHeader*>(data.data());
+    uint32_t code_off = header->data_off; 
+    
+    uint32_t current_offset = 0;
+    for (int i = 0; i < 32; i++) {
         DexInstruction ins;
-        ins.offset = i * 2;
-        uint8_t op = data[(i * 2) % data.size()];
+        ins.offset = current_offset;
+        
+        uint32_t pos = code_off + current_offset;
+        if (pos >= data.size()) break;
+        
+        uint8_t op = data[pos];
         ins.opcode = opcode_names[op % 64];
+        
+        int len = getOpcodeLength(op);
         std::stringstream ss;
-        ss << "reg v" << (data[(i * 2 + 1) % data.size()] % 16) << ", #" << std::hex << (int)data[(i * 2 + 2) % data.size()];
+        for(int j = 1; j < len; j++) {
+            if(pos + j < data.size()) ss << std::hex << (int)data[pos + j] << " ";
+        }
         ins.details = ss.str();
         insts.push_back(ins);
+        
+        current_offset += len;
     }
     
     return insts;
