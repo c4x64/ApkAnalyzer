@@ -7,6 +7,7 @@ mod zip_utility;
 mod scanner;
 mod exporter;
 mod manifest_parser;
+mod il2cpp_scanner;
 
 use eframe::egui;
 
