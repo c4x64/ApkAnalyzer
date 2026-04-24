@@ -1,5 +1,6 @@
 #include "Instrumentation.hpp"
 #include "Logger.hpp"
+#include <fstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -39,14 +40,11 @@ namespace Instrumentation {
         // Define a path for the dumped library
         std::string dumpPath = "dumped_lib.so";
         
-        // Create the file and write the memory contents
-        HANDLE hFile = CreateFileA(dumpPath.c_str(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        if (hFile != INVALID_HANDLE_VALUE) {
-            DWORD bytesWritten = 0;
-            // Note: This assumes 'base' and 'size' were passed correctly by the caller.
-            // In a production hook, we would retrieve these from register state.
-            WriteFile(hFile, (LPCVOID)base, (DWORD)size, &bytesWritten, NULL);
-            CloseHandle(hFile);
+        // Create the file and write the memory contents using standard streams
+        std::ofstream outFile(dumpPath, std::ios::binary);
+        if (outFile.is_open()) {
+            outFile.write(reinterpret_cast<const char*>(base), size);
+            outFile.close();
             Logger::log(Logger::SUCCESS, "Library successfully dumped to " + dumpPath);
         } else {
             Logger::log(Logger::WARNING, "Failed to create dump file.");
