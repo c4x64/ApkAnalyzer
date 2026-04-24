@@ -10,9 +10,8 @@ include_directories(${PROJECT_SOURCE_DIR}/third_party)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/imgui)
 include_directories(${PROJECT_SOURCE_DIR}/third_party/imgui/backends)
 
-# Source files
-set(SOURCES
-    src/main.cpp
+# Core Source files
+set(CORE_SOURCES
     src/ZipUtility.cpp
     src/ElfParser.cpp
     src/DexParser.cpp
@@ -32,42 +31,32 @@ set(SOURCES
     src/core/FileMapper.cpp
     src/core/DexAnalyzer.cpp
     src/core/Instrumentation.cpp
+    src/utils/EntropyCalculator.cpp
+    src/utils/Utils.cpp
     third_party/imgui/imgui.cpp
     third_party/imgui/imgui_draw.cpp
     third_party/imgui/imgui_widgets.cpp
     third_party/imgui/imgui_tables.cpp
 )
 
-set(GUI_SOURCES
-    ${SOURCES}
-    src/gui_main.cpp
-    third_party/imgui/backends/imgui_impl_win32.cpp
-    third_party/imgui/backends/imgui_impl_dx11.cpp
-)
-
-# Header files
-set(HEADERS
-    include/ZipUtility.hpp
-    include/ElfParser.hpp
-    include/DexParser.hpp
-    include/Il2CppScanner.hpp
-    include/ManifestParser.hpp
-    include/Exporter.hpp
-    include/Menu.hpp
-)
-
-# Shared Library (for Android .so)
-add_library(apkanalyzer_lib SHARED ${SOURCES})
-set_target_properties(apkanalyzer_lib PROPERTIES OUTPUT_NAME "apkcore")
+# Core Library
+add_library(ApkAnalyzerCore STATIC ${CORE_SOURCES})
 
 # CLI Executable
-add_executable(apkanalyzer_cli src/main.cpp ${SOURCES})
-set_target_properties(apkanalyzer_cli PROPERTIES OUTPUT_NAME "apk_offset_gen")
+add_executable(apkanalyzer_cli src/main.cpp)
+target_link_libraries(apkanalyzer_cli ApkAnalyzerCore)
 
-# Windows GUI (if on Windows)
+# Test Executable
+add_executable(test_entropy tests/test_entropy.cpp)
+target_link_libraries(test_entropy ApkAnalyzerCore)
+
+# GUI Executable (if applicable)
 if(WIN32)
+    set(GUI_SOURCES
+        src/gui_main.cpp
+        third_party/imgui/backends/imgui_impl_win32.cpp
+        third_party/imgui/backends/imgui_impl_dx11.cpp
+    )
     add_executable(apkanalyzer_gui WIN32 ${GUI_SOURCES})
-    target_link_libraries(apkanalyzer_gui d3d11 d3dcompiler dwmapi)
+    target_link_libraries(apkanalyzer_gui ApkAnalyzerCore d3d11 d3dcompiler dwmapi)
 endif()
-target_sources(ApkAnalyzer PRIVATE src/utils/EntropyCalculator.cpp)
-target_sources(ApkAnalyzer PRIVATE src/utils/Utils.cpp)
