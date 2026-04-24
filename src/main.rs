@@ -6,6 +6,7 @@ mod dex_parser;
 mod zip_utility;
 mod scanner;
 mod exporter;
+mod manifest_parser;
 
 use eframe::egui;
 
