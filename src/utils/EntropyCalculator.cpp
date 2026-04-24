@@ -24,4 +24,8 @@ double EntropyCalculator::calculate(const uint8_t* data, size_t size) {
     return entropy;
 }
 
+double EntropyCalculator::calculate(const std::vector<uint8_t>& data) {
+    return calculate(data.data(), data.size());
+}
+
 } // namespace ApkAnalyzer
