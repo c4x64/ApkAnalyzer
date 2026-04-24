@@ -72,6 +72,21 @@ impl eframe::App for ApkAnalyzerApp {
                             }
                             Err(e) => self.log_messages.push(format!("Error listing ZIP: {}", e)),
                         }
+                    } else if path.ends_with(".xml") {
+                        match std::fs::read(&path) {
+                            Ok(data) => {
+                                match crate::manifest_parser::ManifestParser::parse_xml(&data) {
+                                    Ok(info) => {
+                                        self.log_messages.push(format!("Manifest Analysis for {}:", path));
+                                        for line in info.lines() {
+                                            self.log_messages.push(format!("  {}", line));
+                                        }
+                                    }
+                                    Err(e) => self.log_messages.push(format!("Error parsing XML: {}", e)),
+                                }
+                            }
+                            Err(e) => self.log_messages.push(format!("Error reading XML file: {}", e)),
+                        }
                     } else {
                         // General entropy analysis
                         match crate::entropy::EntropyCalculator::calculate_from_file(&path) {
