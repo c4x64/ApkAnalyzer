@@ -2,6 +2,7 @@ use eframe::egui;
 
 pub struct ApkAnalyzerApp {
     input_path: String,
+    scan_pattern: String,
     log_messages: Vec<String>,
 }
 
@@ -9,6 +10,7 @@ impl Default for ApkAnalyzerApp {
     fn default() -> Self {
         Self {
             input_path: String::new(),
+            scan_pattern: String::new(),
             log_messages: vec!["Welcome to ApkAnalyzer (Rust Edition)".to_string()],
         }
     }
@@ -75,6 +77,32 @@ impl eframe::App for ApkAnalyzerApp {
                         match crate::entropy::EntropyCalculator::calculate_from_file(&path) {
                             Ok(e) => self.log_messages.push(format!("Entropy of {}: {:.4}", path, e)),
                             Err(err) => self.log_messages.push(format!("Error: {}", err)),
+                        }
+                    }
+                }
+            });
+
+            ui.horizontal(|ui| {
+                ui.label("Scan Pattern: ");
+                ui.text_edit_singleline(&mut self.scan_pattern);
+                if ui.button("Scan").clicked() {
+                    let path = self.input_path.clone();
+                    let pattern = self.scan_pattern.clone();
+                    if path.is_empty() || pattern.is_empty() {
+                        self.log_messages.push("Error: Path or Pattern is empty".to_string());
+                    } else {
+                        match std::fs::read(&path) {
+                            Ok(data) => {
+                                let results = crate::scanner::PatternScanner::scan(&data, &pattern);
+                                self.log_messages.push(format!("Scan results for {}: {} matches", pattern, results.len()));
+                                for r in results.iter().take(10) {
+                                    self.log_messages.push(format!("  Match at 0x{:x}", r));
+                                }
+                                if results.len() > 10 {
+                                    self.log_messages.push(format!("  ... and {} more", results.len() - 10));
+                                }
+                            }
+                            Err(e) => self.log_messages.push(format!("Error reading file for scan: {}", e)),
                         }
                     }
                 }
