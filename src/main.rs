@@ -4,6 +4,7 @@ mod gui;
 mod elf_parser;
 mod dex_parser;
 mod zip_utility;
+mod scanner;
 
 use eframe::egui;
 
