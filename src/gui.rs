@@ -69,8 +69,18 @@ impl eframe::App for ApkAnalyzerApp {
                                 if files.len() > 15 {
                                     self.log_messages.push(format!("  ... and {} more", files.len() - 15));
                                 }
+                                
+                                // Check for IL2CPP
+                                if files.iter().any(|f| f.ends_with("global-metadata.dat")) {
+                                    self.log_messages.push("  [+] IL2CPP Metadata found!".to_string());
+                                }
                             }
                             Err(e) => self.log_messages.push(format!("Error listing ZIP: {}", e)),
+                        }
+                    } else if path.ends_with(".dat") {
+                        match crate::il2cpp_scanner::Il2CppScanner::scan_metadata(&path) {
+                            Ok(version) => self.log_messages.push(format!("IL2CPP Metadata version: {}", version)),
+                            Err(e) => self.log_messages.push(format!("Error scanning metadata: {}", e)),
                         }
                     } else if path.ends_with(".xml") {
                         match std::fs::read(&path) {
