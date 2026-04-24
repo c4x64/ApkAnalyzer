@@ -1,9 +1,13 @@
 #include "Instrumentation.hpp"
 #include "Logger.hpp"
+
+#ifdef _WIN32
 #include <windows.h>
 #include <psapi.h>
+#endif
 
 namespace Instrumentation {
+#ifdef _WIN32
     bool placeHook(uintptr_t target, void* replacement, void** original) {
         DWORD oldProtect;
         if (!VirtualProtect((void*)target, 5, PAGE_EXECUTE_READWRITE, &oldProtect)) return false;
@@ -15,9 +19,21 @@ namespace Instrumentation {
         VirtualProtect((void*)target, 5, oldProtect, &oldProtect);
         return true;
     }
+#else
+    bool placeHook(uintptr_t target, void* replacement, void** original) {
+        // Linux implementation would use mprotect and different patching logic
+        return false; 
+    }
+#endif
+
+#ifdef _WIN32
+#define STDCALL __stdcall
+#else
+#define STDCALL
+#endif
 
     // This is the function we call when a hook is triggered
-    void __stdcall DecryptionTriggerHook(uintptr_t base, size_t size) {
+    void STDCALL DecryptionTriggerHook(uintptr_t base, size_t size) {
         Logger::log(Logger::SUCCESS, "Decryption routine triggered! Dumping memory range...");
         
         // Define a path for the dumped library
