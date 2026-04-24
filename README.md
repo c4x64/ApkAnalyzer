@@ -9,7 +9,7 @@
 ╚═╝  ╚═╝╚═╝     ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝   ╚══════╝╚══════╝╚═╝  ╚═╝
 ```
 
-**High-performance, cross-platform engine for APK analysis, native symbol extraction, Java method introspection, and IL2CPP metadata reconstruction.**
+**Extremely high-performance, cross-platform engine for APK analysis, native symbol extraction, Java method introspection, and IL2CPP metadata reconstruction.**
 
 <br/>
 
