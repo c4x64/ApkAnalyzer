@@ -1,6 +1,8 @@
 mod utils;
 mod entropy;
 mod gui;
+mod elf_parser;
+mod dex_parser;
 
 use eframe::egui;
 
