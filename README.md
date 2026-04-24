@@ -173,7 +173,8 @@ cmake --build build --config Release -j$(nproc)
 | `--profile <name>` | `string` | Load obfuscation profile (`freefire`, `pubg`, `generic`) |
 | `--scan-all` | `bool` | Run all pattern scans in the active profile |
 | `--gui` | `bool` | Launch ImGui interactive search interface |
-| `--verbose` | `bool` | Enable verbose diagnostic output |
+| `--verbose
+--entropy-calc` | `bool` | Enable verbose diagnostic output |
 
 ---
 
