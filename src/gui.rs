@@ -57,6 +57,19 @@ impl eframe::App for ApkAnalyzerApp {
                             }
                             Err(e) => self.log_messages.push(format!("Error parsing DEX: {}", e)),
                         }
+                    } else if path.ends_with(".apk") || path.ends_with(".zip") {
+                        match crate::zip_utility::ZipUtility::list_files(&path) {
+                            Ok(files) => {
+                                self.log_messages.push(format!("APK/ZIP Contents for {}: {} files found", path, files.len()));
+                                for f in files.iter().take(15) {
+                                    self.log_messages.push(format!("  {}", f));
+                                }
+                                if files.len() > 15 {
+                                    self.log_messages.push(format!("  ... and {} more", files.len() - 15));
+                                }
+                            }
+                            Err(e) => self.log_messages.push(format!("Error listing ZIP: {}", e)),
+                        }
                     } else {
                         // General entropy analysis
                         match crate::entropy::EntropyCalculator::calculate_from_file(&path) {
