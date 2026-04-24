@@ -1,8 +1,21 @@
 use std::io::Read;
 
+extern "C" {
+    fn calculate_shannon_entropy(data: *const u8, size: usize) -> f64;
+}
+
 pub struct EntropyCalculator;
 
 impl EntropyCalculator {
+    pub fn calculate_native(data: &[u8]) -> f64 {
+        if data.is_empty() {
+            return 0.0;
+        }
+        unsafe {
+            calculate_shannon_entropy(data.as_ptr(), data.len())
+        }
+    }
+
     pub fn calculate(data: &[u8]) -> f64 {
         if data.is_empty() {
             return 0.0;
@@ -68,11 +81,13 @@ mod tests {
     fn test_entropy() {
         let data = vec![0u8; 100];
         assert!((EntropyCalculator::calculate(&data) - 0.0).abs() < 0.001);
+        assert!((EntropyCalculator::calculate_native(&data) - 0.0).abs() < 0.001);
 
         let mut data2 = Vec::new();
         for i in 0..256 {
             data2.push(i as u8);
         }
         assert!((EntropyCalculator::calculate(&data2) - 8.0).abs() < 0.001);
+        assert!((EntropyCalculator::calculate_native(&data2) - 8.0).abs() < 0.001);
     }
 }
