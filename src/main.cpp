@@ -7,7 +7,8 @@
 #include "Il2CppScanner.hpp"
 #include "Exporter.hpp"
 #include "Menu.hpp"
-#include "Logger.hpp"
+#include "Logger.hpp
+#include "utils/EntropyCalculator.hpp""
 
 void printHelp() {
     std::cout << "Usage: apk_offset_gen <apk_path> [options]\n";
