@@ -29,7 +29,41 @@ impl eframe::App for ApkAnalyzerApp {
                 ui.label("Input Path: ");
                 ui.text_edit_singleline(&mut self.input_path);
                 if ui.button("Analyze").clicked() {
-                    self.log_messages.push(format!("Analyzing: {}", self.input_path));
+                    let path = self.input_path.clone();
+                    if path.is_empty() {
+                        self.log_messages.push("Error: No input path provided".to_string());
+                    } else if path.ends_with(".so") || path.contains("lib") {
+                        let parser = crate::elf_parser::ElfParser::new(&path);
+                        match parser.dump_symbols() {
+                            Ok(symbols) => {
+                                self.log_messages.push(format!("ELF Analysis for {}: {} symbols found", path, symbols.len()));
+                                for sym in symbols.iter().take(10) {
+                                    self.log_messages.push(format!("  {}", sym));
+                                }
+                                if symbols.len() > 10 {
+                                    self.log_messages.push(format!("  ... and {} more", symbols.len() - 10));
+                                }
+                            }
+                            Err(e) => self.log_messages.push(format!("Error parsing ELF: {}", e)),
+                        }
+                    } else if path.ends_with(".dex") {
+                        let parser = crate::dex_parser::DexParser::new(&path);
+                        match parser.analyze() {
+                            Ok(info) => {
+                                self.log_messages.push(format!("DEX Analysis for {}:", path));
+                                for line in info {
+                                    self.log_messages.push(format!("  {}", line));
+                                }
+                            }
+                            Err(e) => self.log_messages.push(format!("Error parsing DEX: {}", e)),
+                        }
+                    } else {
+                        // General entropy analysis
+                        match crate::entropy::EntropyCalculator::calculate_from_file(&path) {
+                            Ok(e) => self.log_messages.push(format!("Entropy of {}: {:.4}", path, e)),
+                            Err(err) => self.log_messages.push(format!("Error: {}", err)),
+                        }
+                    }
                 }
             });
 
