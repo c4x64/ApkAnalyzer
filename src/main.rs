@@ -3,6 +3,7 @@ mod entropy;
 mod gui;
 mod elf_parser;
 mod dex_parser;
+mod zip_utility;
 
 use eframe::egui;
 
