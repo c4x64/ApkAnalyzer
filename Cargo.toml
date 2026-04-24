@@ -14,3 +14,6 @@ hex = "0.4"
 sha2 = "0.10"
 walkdir = "2.5"
 zip = "2.1"
+
+[build-dependencies]
+cc = "1.1"
